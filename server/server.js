@@ -23,9 +23,13 @@ const PORT = process.env.PORT || 5000;
 // Initialization helper (connect DB/Redis). For serverless deployments we call this
 // from the wrapper function so we don't start long-running background tasks on import.
 const initialize = async () => {
+  console.log("initialize: starting");
+
   // Connect to MongoDB if not already connected
   try {
+    console.log("initialize: connecting to MongoDB...");
     await connectDB();
+    console.log("initialize: MongoDB connected");
   } catch (err) {
     console.error("❌ MongoDB Connection Error:", err);
     throw err;
@@ -33,12 +37,14 @@ const initialize = async () => {
 
   // Connect to Redis (no-op if already connected)
   try {
+    console.log("initialize: connecting to Redis...");
     if (!redisClient.isOpen) {
       await redisClient.connect();
     }
     console.log("✅ Redis Connected (Cache Layer)");
   } catch (error) {
     console.error("❌ Redis Connection Error:", error);
+    throw error;
   }
 };
 
@@ -76,7 +82,7 @@ app.use((req, res, next) => {
 app.use("/api/", distributedRateLimiter);
 
 // --- Simple health-check (useful for debugging CORS/availability)
-app.get('/api/ping', (req, res) => res.json({ ok: true }));
+app.get("/api/ping", (req, res) => res.json({ ok: true }));
 
 // --- Mount Routes ---
 app.use("/api/auth", authRoutes);
