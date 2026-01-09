@@ -75,6 +75,9 @@ app.use((req, res, next) => {
 // Only apply to API routes, not the redirect route (we want redirects to be fast and frequent)
 app.use("/api/", distributedRateLimiter);
 
+// --- Simple health-check (useful for debugging CORS/availability)
+app.get('/api/ping', (req, res) => res.json({ ok: true }));
+
 // --- Mount Routes ---
 app.use("/api/auth", authRoutes);
 app.use("/api/url", urlRoutes);
