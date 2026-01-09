@@ -79,7 +79,11 @@ const App = () => {
   const normalizeError = (err) => {
     const d = err?.response?.data;
     const msg =
-      d?.error?.message || d?.message || d?.error || err?.message || "Request failed";
+      d?.error?.message ||
+      d?.message ||
+      d?.error ||
+      err?.message ||
+      "Request failed";
     return typeof msg === "string" ? msg : JSON.stringify(msg);
   };
 

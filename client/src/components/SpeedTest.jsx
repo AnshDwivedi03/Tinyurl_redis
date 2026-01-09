@@ -13,8 +13,7 @@ const SpeedTest = () => {
 
   // API base is read from Vite env var in production. Fallback to a relative `/api` for safety.
   // VITE_API_BASE should be the full API base (including /api), e.g. https://api.example.com/api
-  const API_BASE =
-    (import.meta.env.VITE_API_BASE || "/api") + "/speed";
+  const API_BASE = (import.meta.env.VITE_API_BASE || "/api") + "/speed";
 
   const fetchDirect = async () => {
     setLoadingDirect(true);

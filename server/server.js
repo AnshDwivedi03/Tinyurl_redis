@@ -20,20 +20,27 @@ const speedRoutes = require("./routes/speed"); // <--- New Import
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Connect to Databases
-connectDB(); // MongoDB
-
-(async () => {
+// Initialization helper (connect DB/Redis). For serverless deployments we call this
+// from the wrapper function so we don't start long-running background tasks on import.
+const initialize = async () => {
+  // Connect to MongoDB if not already connected
   try {
-    await redisClient.connect(); // Redis
-    console.log("✅ Redis Connected (Cache Layer)");
+    await connectDB();
+  } catch (err) {
+    console.error("❌ MongoDB Connection Error:", err);
+    throw err;
+  }
 
-    // Start Background Worker for Write-Behind Analytics
-    syncAnalytics();
+  // Connect to Redis (no-op if already connected)
+  try {
+    if (!redisClient.isOpen) {
+      await redisClient.connect();
+    }
+    console.log("✅ Redis Connected (Cache Layer)");
   } catch (error) {
     console.error("❌ Redis Connection Error:", error);
   }
-})();
+};
 
 // --- Middleware ---
 app.use(helmet()); // Security Headers
@@ -80,7 +87,23 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: "Internal Server Error" });
 });
 
-// --- Start Server ---
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-});
+// If run directly (not required as a module), initialize and start background worker + server
+if (require.main === module) {
+  (async () => {
+    try {
+      await initialize();
+      // Start Background Worker for Write-Behind Analytics (only in standalone mode)
+      syncAnalytics();
+
+      app.listen(PORT, () => {
+        console.log(`🚀 Server running on port ${PORT}`);
+      });
+    } catch (err) {
+      console.error("Failed to start server:", err);
+      process.exit(1);
+    }
+  })();
+}
+
+// Export app and initialize for serverless wrappers and tests
+module.exports = { app, initialize };
