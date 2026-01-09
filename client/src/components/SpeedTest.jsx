@@ -11,10 +11,10 @@ const SpeedTest = () => {
   const [loadingRedis, setLoadingRedis] = useState(false);
   const [error, setError] = useState("");
 
-  // API base is read from Vite env var in production. Fallback to localhost for dev.
+  // API base is read from Vite env var in production. Fallback to a relative `/api` for safety.
   // VITE_API_BASE should be the full API base (including /api), e.g. https://api.example.com/api
   const API_BASE =
-    (import.meta.env.VITE_API_BASE || "http://localhost:5000/api") + "/speed";
+    (import.meta.env.VITE_API_BASE || "/api") + "/speed";
 
   const fetchDirect = async () => {
     setLoadingDirect(true);

@@ -14,10 +14,11 @@ import {
 import SpeedTest from "./components/SpeedTest";
 
 axios.defaults.withCredentials = true;
-// Use Vite environment variables in production. Keep localhost fallbacks for local dev.
+// Use Vite environment variables in production. Keep local-friendly fallbacks.
 // Set VITE_API_BASE to the full API base (including /api) in your Vercel env vars, e.g. https://api.example.com/api
 // Set VITE_REDIRECT_BASE to the server origin used for public redirect links, e.g. https://api.example.com
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5000/api";
+// Default to a relative `/api` so production doesn't include hard-coded localhost.
+const API_BASE = import.meta.env.VITE_API_BASE || "/api";
 const REDIRECT_BASE =
   import.meta.env.VITE_REDIRECT_BASE || "http://localhost:5000";
 
