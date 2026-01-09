@@ -75,6 +75,14 @@ const App = () => {
     }
   };
 
+  // Normalize API errors into strings so React doesn't try to render objects
+  const normalizeError = (err) => {
+    const d = err?.response?.data;
+    const msg =
+      d?.error?.message || d?.message || d?.error || err?.message || "Request failed";
+    return typeof msg === "string" ? msg : JSON.stringify(msg);
+  };
+
   const handleAuth = async (e) => {
     e.preventDefault();
     setError("");
@@ -86,7 +94,7 @@ const App = () => {
       });
       setUser(data.user);
     } catch (err) {
-      setError(err.response?.data?.error || "Authentication failed");
+      setError(normalizeError(err));
     }
   };
 
