@@ -26,6 +26,12 @@ const initialize = async () => {
   console.log("initialize: starting");
 
   // Connect to MongoDB if not already connected
+  if (!process.env.MONGO_URI) {
+    const err = new Error("MONGO_URI environment variable is missing");
+    console.error("❌ MongoDB Configuration Error:", err.message);
+    throw err;
+  }
+
   try {
     console.log("initialize: connecting to MongoDB...");
     await connectDB();
@@ -35,16 +41,22 @@ const initialize = async () => {
     throw err;
   }
 
-  // Connect to Redis (no-op if already connected)
-  try {
-    console.log("initialize: connecting to Redis...");
-    if (!redisClient.isOpen) {
-      await redisClient.connect();
+  // Connect to Redis (no-op if already connected). If REDIS_URL not set, log and skip.
+  if (!process.env.REDIS_URL) {
+    console.warn(
+      "⚠️ REDIS_URL is not set; skipping Redis connection (cache features disabled)"
+    );
+  } else {
+    try {
+      console.log("initialize: connecting to Redis...");
+      if (!redisClient.isOpen) {
+        await redisClient.connect();
+      }
+      console.log("✅ Redis Connected (Cache Layer)");
+    } catch (error) {
+      console.error("❌ Redis Connection Error:", error);
+      // Do not throw; allow app to run without cache
     }
-    console.log("✅ Redis Connected (Cache Layer)");
-  } catch (error) {
-    console.error("❌ Redis Connection Error:", error);
-    throw error;
   }
 };
 

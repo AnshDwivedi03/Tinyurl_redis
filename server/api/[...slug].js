@@ -6,20 +6,20 @@ let _initialized = false;
 let _initPromise = null;
 
 const ensureInit = async () => {
-  console.log('ensureInit: called');
+  console.log("ensureInit: called");
   if (_initialized) {
-    console.log('ensureInit: already initialized');
+    console.log("ensureInit: already initialized");
     return;
   }
   if (_initPromise) return _initPromise;
   _initPromise = (async () => {
     try {
-      console.log('ensureInit: initializing...');
+      console.log("ensureInit: initializing...");
       await initialize();
       _initialized = true;
-      console.log('ensureInit: initialization complete');
+      console.log("ensureInit: initialization complete");
     } catch (err) {
-      console.error('Initialization failed:', err);
+      console.error("Initialization failed:", err);
       // proceed anyway; requests may fail but we don't want to crash the lambda
     }
   })();
