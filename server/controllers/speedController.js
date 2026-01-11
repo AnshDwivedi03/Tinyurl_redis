@@ -6,9 +6,9 @@ exports.fetchDirect = async (req, res) => {
     const start = process.hrtime();
     try {
         const response = await axios.get('https://jsonplaceholder.typicode.com/todos');
-        
+
         // Simulating a heavy database query (500ms delay)
-        await new Promise(resolve => setTimeout(resolve, 500)); 
+        await new Promise(resolve => setTimeout(resolve, 500));
 
         const diff = process.hrtime(start);
         const timeTaken = (diff[0] * 1e3 + diff[1] * 1e-6).toFixed(3);
@@ -32,20 +32,23 @@ exports.fetchRedis = async (req, res) => {
         const cachedData = await redisClient.get(CACHE_KEY);
 
         if (cachedData) {
+            console.log('Cache Hit. Type:', typeof cachedData);
             const diff = process.hrtime(start);
             const timeTaken = (diff[0] * 1e3 + diff[1] * 1e-6).toFixed(3);
+
+            const data = typeof cachedData === 'string' ? JSON.parse(cachedData) : cachedData;
 
             return res.json({
                 source: 'Redis Cache ⚡',
                 timeTaken: `${timeTaken}ms`,
-                data: JSON.parse(cachedData).slice(0, 5)
+                data: data.slice(0, 5)
             });
         }
 
         const response = await axios.get('https://jsonplaceholder.typicode.com/todos');
-        
+
         // Save to Redis (Expire in 60s)
-        await redisClient.set(CACHE_KEY, JSON.stringify(response.data), { EX: 60 }); 
+        await redisClient.set(CACHE_KEY, JSON.stringify(response.data), { ex: 60 });
 
         const diff = process.hrtime(start);
         const timeTaken = (diff[0] * 1e3 + diff[1] * 1e-6).toFixed(3);
@@ -57,6 +60,7 @@ exports.fetchRedis = async (req, res) => {
         });
 
     } catch (error) {
+        console.error('Redis Fetch Error:', error);
         res.status(500).json({ error: error.message });
     }
 };
@@ -66,7 +70,7 @@ exports.clearCache = async (req, res) => {
     try {
         await redisClient.del('speed_test_data');
         res.json({ message: 'Cache Cleared' });
-    } catch(e) {
+    } catch (e) {
         res.status(500).json({ error: 'Failed' });
     }
 };

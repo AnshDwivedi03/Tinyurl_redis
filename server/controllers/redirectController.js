@@ -13,10 +13,10 @@ exports.redirectUrl = async (req, res) => {
             await redisClient.set(`url:${code}`, originalUrl, { EX: 3600 });
         }
 
-        const pipeline = redisClient.multi();
-        pipeline.zIncrBy('trending_urls', 1, code); 
-        pipeline.hIncrBy('analytics_buffer', code, 1); 
-        pipeline.exec();
+        const pipeline = redisClient.pipeline();
+        pipeline.zincrby('trending_urls', 1, code);
+        pipeline.hincrby('analytics_buffer', code, 1);
+        await pipeline.exec();
 
         const diff = process.hrtime(req.startTime);
         const timeTaken = (diff[0] * 1e3 + diff[1] * 1e-6).toFixed(3);
